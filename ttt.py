@@ -1,73 +1,82 @@
-def print_board(board):
-    print("   |   |")
-    print(" " + board[0] + " | " + board[1] + " | " + board[2])
-    print("___|___|___")
-    print("   |   |")
-    print(" " + board[3] + " | " + board[4] + " | " + board[5])
-    print("___|___|___")
-    print("   |   |")
-    print(" " + board[6] + " | " + board[7] + " | " + board[8])
-    print("   |   |")
+from tkinter import *
 
-def play_game():
-    board = [" ", " ", " ", " ", " ", " ", " ", " ", " "]
-    current_player = "X"
-    game_over = False
+class TicTacToe:
+    def __init__(self, master):
+        self.master = master
+        master.title("Tic-Tac-Toe")
 
-    while not game_over:
-        print_board(board)
-        move = input(f"{current_player}'s turn. Enter a position (1-9): ")
+        self.current_player = "X"
+        self.game_over = False
+        self.board = [" "]*9
 
-        if move.isdigit() and int(move) in range(1, 10):
-            move = int(move) - 1
+        self.board_buttons = []
+        for i in range(9):
+            button = Button(master, text=" ", font=("Helvetica", 24), width=3, height=1, command=lambda i=i: self.update_board(i))
+            button.grid(row=i//3, column=i%3)
+            self.board_buttons.append(button)
 
-            if board[move] == " ":
-                board[move] = current_player
+        self.reset_button = Button(master, text="Reset", font=("Helvetica", 14), command=self.reset_board)
+        self.reset_button.grid(row=3, column=1)
 
-                if current_player == "X":
-                    current_player = "O"
-                else:
-                    current_player = "X"
+        self.status_label = Label(master, text="X's turn", font=("Helvetica", 14))
+        self.status_label.grid(row=4, column=1)
+
+    def update_board(self, index):
+        if not self.game_over and self.board[index] == " ":
+            self.board[index] = self.current_player
+            self.board_buttons[index].config(text=self.current_player)
+
+            if self.current_player == "X":
+                self.current_player = "O"
             else:
-                print("That position is already taken. Try again.")
-        else:
-            print("Invalid input. Please enter a number between 1 and 9.")
+                self.current_player = "X"
 
-        # check for game over conditions
+            self.check_game_over()
+
+            if not self.game_over:
+                self.status_label.config(text=self.current_player+"'s turn")
+
+    def check_game_over(self):
         for i in range(0, 9, 3):
-            if board[i] == board[i+1] == board[i+2] != " ":
-                print_board(board)
-                print(f"Game over. {board[i]} wins!")
-                game_over = True
+            if self.board[i] == self.board[i+1] == self.board[i+2] != " ":
+                self.game_over = True
+                self.status_label.config(text=self.current_player+" wins!")
+                self.highlight_winning_row([i, i+1, i+2])
                 break
 
         for i in range(3):
-            if board[i] == board[i+3] == board[i+6] != " ":
-                print_board(board)
-                print(f"Game over. {board[i]} wins!")
-                game_over = True
+            if self.board[i] == self.board[i+3] == self.board[i+6] != " ":
+                self.game_over = True
+                self.status_label.config(text=self.current_player+" wins!")
+                self.highlight_winning_row([i, i+3, i+6])
                 break
 
-        if board[0] == board[4] == board[8] != " ":
-            print_board(board)
-            print(f"Game over. {board[0]} wins!")
-            game_over = True
+        if self.board[0] == self.board[4] == self.board[8] != " ":
+            self.game_over = True
+            self.status_label.config(text=self.current_player+" wins!")
+            self.highlight_winning_row([0, 4, 8])
 
-        if board[2] == board[4] == board[6] != " ":
-            print_board(board)
-            print(f"Game over. {board[2]} wins!")
-            game_over = True
+        if self.board[2] == self.board[4] == self.board[6] != " ":
+            self.game_over = True
+            self.status_label.config(text=self.current_player+" wins!")
+            self.highlight_winning_row([2, 4, 6])
 
-        if " " not in board:
-            print_board(board)
-            print("Game over. It's a tie!")
-            game_over = True
+        if " " not in self.board and not self.game_over:
+            self.game_over = True
+            self.status_label.config(text="It's a tie!")
 
-    play_again = input("Do you want to play again? (y/n): ")
+    def highlight_winning_row(self, row):
+        for i in row:
+            self.board_buttons[i].config(bg="yellow")
 
-    if play_again.lower() == "y":
-        play_game()
-    else:
-        print("Thanks for playing Tic-Tac-Toe!")
+    def reset_board(self):
+        self.current_player = "X"
+        self.game_over = False
+        self.board = [" "]*9
+        for button in self.board_buttons:
+            button.config(text=" ", bg="white")
+        self.status_label.config(text="X's turn")
 
-play_game()
+root = Tk()
+game = TicTacToe(root)
+root.mainloop()
